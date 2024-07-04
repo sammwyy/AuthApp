@@ -16,6 +16,7 @@ import {
 import useAuth from "@/hooks/use-auth";
 import useColorMode from "@/hooks/use-color-mode";
 import useData from "@/hooks/use-data";
+import useMobile from "@/hooks/use-mobile";
 
 import {
   ExitIcon,
@@ -27,6 +28,7 @@ import {
 
 // Namespace settings.
 function NavbarNamespacePicker() {
+  const isMobile = useMobile();
   const { namespaces, selectedNamespace, setSelectedNamespace } = useData();
 
   return (
@@ -41,7 +43,13 @@ function NavbarNamespacePicker() {
         }
       }}
     >
-      <SelectTrigger className="max-w-[250px] rounded-none border-transparent border-b-primary">
+      <SelectTrigger
+        className={`rounded-none border-transparent text-left ${
+          isMobile
+            ? "font-bold text-xl max-w-[350px]"
+            : "border-b-primary max-w-[250px]"
+        }`}
+      >
         <SelectValue
           className="text-gray-600"
           placeholder="No namespace selected"
@@ -104,18 +112,21 @@ function NavbarUser() {
 }
 
 export function Navbar() {
-  const { client, logged } = useAuth();
+  const { logged } = useAuth();
   const { colorMode, toggleColorMode } = useColorMode();
+  const isMobile = useMobile();
 
   return (
     <nav className="bg p-4">
-      <div className="container flex items-center">
-        <div className="w-full flex justify-start">
-          <h1 className="font-bold text-3xl">AuthApp</h1>
-        </div>
+      <div className={`${!isMobile && "container"} flex items-center`}>
+        {!isMobile && (
+          <div className="w-full flex justify-start">
+            <h1 className="font-bold text-3xl">AuthApp</h1>
+          </div>
+        )}
 
         {logged && (
-          <div className="w-full flex justify-center">
+          <div className={`w-full flex ${!isMobile && "justify-center"}`}>
             <NavbarNamespacePicker />
           </div>
         )}

@@ -35,3 +35,22 @@ export function getTOTP(
   });
   return otp;
 }
+
+export function isValidTOTP(
+  key: string,
+  period: number,
+  digits: number,
+  algorithm: TOTPAlgorithm,
+  totp: string
+) {
+  try {
+    const { otp, expires } = TOTP.generate(key, {
+      digits,
+      algorithm,
+      period,
+    });
+    return otp && expires > Date.now();
+  } catch (e) {
+    return false;
+  }
+}

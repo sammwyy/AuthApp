@@ -24,11 +24,14 @@ import {
 } from "@/components/ui/select";
 import useAuth from "@/hooks/use-auth";
 import useData from "@/hooks/use-data";
+import useMobile from "@/hooks/use-mobile";
 import { TokenType } from "@/lib/client";
-import { TOTPAlgorithm, TOTPAlgorithms } from "@/lib/tokenUtils";
+import { isValidTOTP, TOTPAlgorithm, TOTPAlgorithms } from "@/lib/tokenUtils";
 import SelectIconDialog from "../select-icon-dialog";
 
 export function CreateTokenDialog() {
+  const isMobile = useMobile();
+
   const { client } = useAuth();
   const { selectedNamespace, refreshTokens } = useData();
 
@@ -40,12 +43,14 @@ export function CreateTokenDialog() {
   const [digits, setDigits] = useState<6 | 8>(6);
   const [icon, setIcon] = useState<string | undefined>(undefined);
 
-  const IconClass = getIcon(icon || "");
-
+  const isKeyValid = isValidTOTP(token, interval, digits, algorithm, token);
   const isValid =
+    isKeyValid &&
     name.trim().length > 0 &&
     token.trim().length > 0 &&
     (interval === 30 || interval === 60);
+
+  const IconClass = getIcon(icon || "");
 
   const clear = () => {
     setName("");
@@ -79,7 +84,7 @@ export function CreateTokenDialog() {
     <Dialog onOpenChange={clear}>
       <DialogTrigger asChild>
         <Button className="gap-1">
-          <PlusIcon /> Add Account
+          <PlusIcon /> {isMobile ? "Add" : "Add Account"}
         </Button>
       </DialogTrigger>
 
@@ -188,6 +193,7 @@ export function CreateTokenDialog() {
               required
               value={token}
               onChange={(e) => setToken(e.target.value)}
+              className={!isKeyValid ? "border-red-500" : ""}
             />
           </div>
         </div>
