@@ -1,6 +1,8 @@
+import { Analytics } from "@vercel/analytics/react";
+import { AppProps } from "next/app";
+
 import Layout from "@/components/layout";
 import { AuthProvider } from "@/contexts/auth";
-import { AppProps } from "next/app";
 
 import { ColorProvider } from "@/contexts/color";
 import { DataProvider } from "@/contexts/data";
@@ -13,6 +15,8 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <ColorProvider>
       <Toaster />
+
+      {process.env.NODE_ENV !== "development" && <Analytics />}
 
       <AuthProvider>
         <DataProvider>
