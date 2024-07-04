@@ -1,4 +1,4 @@
-import { PlusIcon } from "@radix-ui/react-icons";
+import { Pencil1Icon, PlusIcon } from "@radix-ui/react-icons";
 import { useState } from "react";
 
 import { getIcon } from "@/components/cards/token-card/icons";
@@ -24,62 +24,82 @@ import {
 } from "@/components/ui/select";
 import useAuth from "@/hooks/use-auth";
 import useData from "@/hooks/use-data";
-import { TokenType } from "@/lib/client";
+import { Token, TokenType } from "@/lib/client";
 import { TOTPAlgorithm, TOTPAlgorithms } from "@/lib/tokenUtils";
 import SelectIconDialog from "../select-icon-dialog";
 
-export function CreateTokenDialog() {
+interface UpdateTokenDialogProps {
+  tokenData: Token;
+}
+
+export function UpdateTokenDialog({ tokenData }: UpdateTokenDialogProps) {
   const { client } = useAuth();
   const { selectedNamespace, refreshTokens } = useData();
 
-  const [name, setName] = useState("");
-  const [interval, setInterval] = useState<30 | 60>(60);
-  const [type, setType] = useState<TokenType>("totp");
-  const [token, setToken] = useState("");
-  const [algorithm, setAlgorithm] = useState<TOTPAlgorithm>("SHA-1");
-  const [digits, setDigits] = useState<6 | 8>(6);
+  const [name, setName] = useState(tokenData.name);
+  const [interval, setInterval] = useState<30 | 60 | undefined>(
+    tokenData.interval
+  );
+  const [type, setType] = useState<TokenType>(tokenData.type);
+  const [algorithm, setAlgorithm] = useState<TOTPAlgorithm | undefined>(
+    tokenData.algorithm
+  );
+  const [digits, setDigits] = useState<number | undefined>(tokenData.digits);
   const [icon, setIcon] = useState<string | undefined>(undefined);
 
   const IconClass = getIcon(icon || "");
 
   const isValid =
-    name.trim().length > 0 &&
-    token.trim().length > 0 &&
-    (interval === 30 || interval === 60);
+    name && name.trim().length > 0 && (interval === 30 || interval === 60);
 
-  const clear = () => {
-    setName("");
-    setInterval(60);
-    setType("totp");
-    setToken("");
-    setAlgorithm("SHA-1");
-    setDigits(6);
-    setIcon(undefined);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const reset = () => {
+    setName(tokenData.name);
+    setInterval(tokenData.interval);
+    setType(tokenData.type);
+    setAlgorithm(tokenData.algorithm);
+    setDigits(tokenData.digits);
+    setIcon(tokenData.icon);
   };
 
-  const handleCreate = async () => {
+  const handleUpdate = async () => {
     const result = await client.tokens
-      .createToken({
+      .updateToken(tokenData.id, {
         icon,
         interval,
         name,
         namespace: selectedNamespace?.id || "",
         type,
-        token,
         algorithm,
-        digits,
+        digits: digits as 6 | 8 | undefined,
       })
       .catch(() => false);
     if (result) {
+      reset();
+      refreshTokens();
+    }
+  };
+
+  const handleDelete = async () => {
+    const result = await client.tokens
+      .deleteToken(tokenData.id)
+      .catch(() => false);
+    if (result) {
+      reset();
       refreshTokens();
     }
   };
 
   return (
-    <Dialog onOpenChange={clear}>
-      <DialogTrigger asChild>
-        <Button className="gap-1">
-          <PlusIcon /> Add Account
+    <Dialog onOpenChange={reset}>
+      <DialogTrigger
+        asChild
+        onClick={(e) => {
+          e.stopPropagation;
+        }}
+      >
+        <Button size={"icon"} variant={"ghost"}>
+          <Pencil1Icon />
         </Button>
       </DialogTrigger>
 
@@ -179,29 +199,31 @@ export function CreateTokenDialog() {
               </SelectContent>
             </Select>
           </div>
-
-          <div>
-            <Label htmlFor="token">Token</Label>
-            <Input
-              type="password"
-              placeholder="********"
-              required
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-            />
-          </div>
         </div>
 
-        <DialogFooter className="sm:justify-start">
-          <DialogClose asChild disabled={!isValid}>
-            <Button type="button" onClick={handleCreate} disabled={!isValid}>
-              Save
-            </Button>
-          </DialogClose>
+        <DialogFooter className="sm:justify-between">
+          <div className="flex gap-2">
+            <DialogClose asChild disabled={!isValid}>
+              <Button type="button" onClick={handleUpdate} disabled={!isValid}>
+                Save
+              </Button>
+            </DialogClose>
+
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
+            </DialogClose>
+          </div>
 
           <DialogClose asChild>
-            <Button type="button" variant="outline">
-              Cancel
+            <Button
+              type="button"
+              variant="ghost"
+              className="bg-red-500 hover:bg-red-700"
+              onClick={handleDelete}
+            >
+              Delete
             </Button>
           </DialogClose>
         </DialogFooter>

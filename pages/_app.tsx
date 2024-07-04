@@ -4,20 +4,21 @@ import { AppProps } from "next/app";
 
 import { ColorProvider } from "@/contexts/color";
 import { DataProvider } from "@/contexts/data";
-import { EncryptionProvider } from "@/contexts/encryption";
 
+import { Toaster } from "@/components/ui/sonner";
 import "@/styles/globals.css";
+import "@/styles/main.css";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <ColorProvider>
+      <Toaster />
+
       <AuthProvider>
         <DataProvider>
-          <EncryptionProvider>
-            <Layout>
-              <Component {...pageProps} />
-            </Layout>
-          </EncryptionProvider>
+          <Layout>
+            <Component {...pageProps} />
+          </Layout>
         </DataProvider>
       </AuthProvider>
     </ColorProvider>

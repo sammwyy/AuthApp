@@ -1,99 +1,83 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import useAuth from "@/hooks/use-auth";
 import useData from "@/hooks/use-data";
-import useEncryption from "@/hooks/use-encryption";
-import { generateKeyPair } from "@/lib/cipherUtils";
-import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
-import { useEffect, useState } from "react";
+import { ExclamationTriangleIcon, LockOpen1Icon } from "@radix-ui/react-icons";
+import { Label } from "@radix-ui/react-label";
+import { FormEvent, useEffect, useState } from "react";
 
-export default function Onboarding() {
+export default function OnBoardingPage() {
   const { client } = useAuth();
-  const { profile, namespaces } = useData();
-  const {} = useEncryption();
+  const { refreshNamespaces } = useData();
 
-  const [password, setPassword] = useState("");
+  const [namespaceName, setNamespaceName] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const needCreateProfile = !profile;
-  const needCreateTokens = !profile?.decryption_key || !profile?.encryption_key;
-  const needCreateNamespace = !namespaces.length;
-
-  const steps = [needCreateProfile, needCreateTokens, needCreateNamespace];
-  const completedSteps = steps.filter((step) => !step).length;
-  const progress = (completedSteps / steps.length) * 100;
-  const progressText = `${completedSteps}/${steps.length}`;
-
-  const currentStep = steps.findIndex((step) => step);
   useEffect(() => {
-    if (needCreateTokens) {
-      const lastPassword = sessionStorage.getItem("last_used_password");
-      if (!lastPassword) {
-        client.auth.logout();
-      }
-    }
-  }, [needCreateProfile, needCreateTokens, needCreateNamespace, client]);
+    setError(null);
+  }, [namespaceName]);
 
-  async function handleGenerateKeys() {
-    const { privateKey, publicKey } = await generateKeyPair();
-    console.log({ privateKey, publicKey });
-  }
+  const handleCreate = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (loading) return;
+
+    setLoading(true);
+    client.namespaces
+      .createNamespace({ name: namespaceName })
+      .then(() => {
+        refreshNamespaces();
+      })
+      .catch((error) => {
+        setError(error.message);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center mt-[100px]">
-      <h1 className="text-3xl font-bold">Welcome to AuthApp!</h1>
-      <p className="mt-2 text-gray-500">
-        Let&apos;s get started by setting your session ({progressText})
+    <div className="flex flex-col w-full mt-20 items-center">
+      <LockOpen1Icon className="w-16 h-16" />
+
+      <h1 className="text-5xl my-4">Welcome to AuthApp!</h1>
+      <p className="text-muted-foreground">
+        Looks like it&apos;s your first time here, let&apos;s set up a few
+        things first!
       </p>
 
-      <Progress value={progress} className="max-w-[300px] my-5" />
-
-      <div
-        className={
-          "border-input border rounded-sm px-4 py-2 max-w-[300px] w-full flex-col gap-3"
-        }
+      <form
+        className="flex flex-col w-[95%] max-w-[400px] mt-8 gap-2 border px-7 py-5 rounded-md"
+        onSubmit={handleCreate}
       >
-        {currentStep === 0 && (
-          <Alert className="border-none">
+        <Label htmlFor="name">Default namespace</Label>
+        <Input
+          id="name"
+          placeholder="My accounts"
+          required
+          value={namespaceName}
+          onChange={(e) => setNamespaceName(e.target.value)}
+        />
+        <p className="text-muted-foreground text-sm">
+          It&apos;s like naming a folder where your data will go.
+        </p>
+
+        {error && (
+          <Alert>
             <ExclamationTriangleIcon className="h-4 w-4" />
-            <AlertTitle>Your profile isn&apos;t ready yet.</AlertTitle>
+            <AlertTitle>Error:</AlertTitle>
             <AlertDescription>
-              Maybe you need to verify your email address.
+              {error || "Something went wrong, please try again."}
             </AlertDescription>
           </Alert>
         )}
 
-        {currentStep === 1 && (
-          <>
-            <p className="text-sm">
-              We use a client-side encryption system to protect your data. You
-              need to generate a pair of keys to start using the app.
-            </p>
-
-            <Input
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              type="password"
-              placeholder="Your current password"
-              className={"w-full my-2"}
-            />
-
-            <Label className="text-xs text-gray-500">
-              We will store your keys encrypted with your password
-            </Label>
-
-            <Button
-              className={"w-full my-2"}
-              onClick={handleGenerateKeys}
-              disabled={!password.trim().length}
-            >
-              Generate keys
-            </Button>
-          </>
-        )}
-      </div>
+        <Button className="btn-primary" type="submit" disabled={loading}>
+          {loading ? "..." : "Create"}
+        </Button>
+      </form>
     </div>
   );
 }

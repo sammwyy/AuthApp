@@ -27,7 +27,7 @@ export default function WebApp() {
   );
 
   return (
-    <div className="flex flex-col max-w-[1366px] w-[95%] m-auto mt-10">
+    <div className="flex flex-col max-w-[1366px] w-[90%] m-auto mt-10">
       <div className="flex gap-2">
         <CreateTokenDialog />
         <Input
@@ -40,8 +40,8 @@ export default function WebApp() {
       {/* Card grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4">
         {/* Cards */}
-        {filteredTokens.map((token) => (
-          <TokenCard key={token.token} token={token} />
+        {filteredTokens.reverse().map((token) => (
+          <TokenCard key={token.id} token={token} />
         ))}
       </div>
     </div>

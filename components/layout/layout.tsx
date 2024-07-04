@@ -5,35 +5,31 @@ import useData from "@/hooks/use-data";
 import { useRouter } from "next/router";
 import Navbar from "../navigation/navbar";
 
-const AUTH_PAGES = ["/app/login", "/app/register", "/app/auth"];
-
 export default function Layout({ children }: PropsWithChildren) {
   const { pathname, push: navigateTo } = useRouter();
   const { logged } = useAuth();
-  const { namespaces, profile } = useData();
-  const needOnboarding =
-    !profile ||
-    !profile.decryption_key ||
-    !profile.encryption_key ||
-    !namespaces.length;
+  const { namespaces } = useData();
 
-  const isAuthPage = AUTH_PAGES.includes(pathname || "");
-  const isOnboardingPage = pathname === "/app/onboarding";
+  const isAuthPage = pathname == "/app/auth";
+
+  const needOnboarding = logged && !namespaces?.length;
+  const isOnboardingPage = pathname == "/app/onboarding";
 
   useEffect(() => {
     if (isAuthPage && logged) {
       navigateTo("/app");
     } else if (!isAuthPage && !logged) {
       navigateTo("/app/auth");
-    } else if (needOnboarding && logged && !isOnboardingPage) {
+    } else if (needOnboarding && !isOnboardingPage) {
       navigateTo("/app/onboarding");
+    } else if (!needOnboarding && isOnboardingPage) {
+      navigateTo("/app");
     }
   }, [isAuthPage, navigateTo, logged, needOnboarding, isOnboardingPage]);
 
   return (
     <div>
       <Navbar />
-
       {children}
     </div>
   );

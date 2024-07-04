@@ -1,9 +1,11 @@
 import { SupabaseClient, createClient } from "@supabase/supabase-js";
+import { TOTPAlgorithm } from "../tokenUtils";
 import AuthAppAuthClient from "./auth";
 import Emitter from "./emitter";
 import AuthAppNamespacesClient from "./namespaces";
-import AuthAppProfileClient from "./profile";
 import AuthAppTokensClient from "./tokens";
+
+export type TokenType = "totp" | "hotp";
 
 export interface AuthAppSettings {
   domain: string;
@@ -19,13 +21,6 @@ export interface Session {
   refresh_token: string;
 }
 
-export interface Profile {
-  id: string;
-  display_name: string;
-  encryption_key: string;
-  decryption_key: string;
-}
-
 export interface Namespace {
   id: string;
   name: string;
@@ -35,10 +30,12 @@ export interface Token {
   id: string;
   namespace: string;
   name: string;
-  icon: string;
-  interval: 30 | 60;
-  type: "totp" | "hotp";
+  type: TokenType;
   token: string;
+  icon?: string;
+  interval?: 30 | 60;
+  digits?: number;
+  algorithm?: TOTPAlgorithm;
 }
 
 export type AuthAppErrorKind =
@@ -64,7 +61,6 @@ export default class AuthApp extends Emitter<AuthAppEvent> {
   public readonly supabase: SupabaseClient;
   public readonly auth: AuthAppAuthClient;
   public readonly namespaces: AuthAppNamespacesClient;
-  public readonly profile: AuthAppProfileClient;
   public readonly tokens: AuthAppTokensClient;
 
   constructor(settings: AuthAppSettings) {
@@ -79,7 +75,6 @@ export default class AuthApp extends Emitter<AuthAppEvent> {
 
     this.auth = new AuthAppAuthClient(this);
     this.namespaces = new AuthAppNamespacesClient(this);
-    this.profile = new AuthAppProfileClient(this);
     this.tokens = new AuthAppTokensClient(this);
   }
 }

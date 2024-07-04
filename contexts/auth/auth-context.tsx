@@ -37,15 +37,8 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     SingletonClient.on("logout", () => {
       console.log("logout");
       setLogged(false);
-
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
-      localStorage.removeItem("secure_encryption_key");
-      localStorage.removeItem("secure_decryption_key");
-
-      sessionStorage.removeItem("last_used_password");
-      sessionStorage.removeItem("session_decryption_key");
-      sessionStorage.removeItem("session_encryption_key");
     });
 
     return SingletonClient;

@@ -1,4 +1,4 @@
-import { Namespace, Profile, Token } from "@/lib/client";
+import { Namespace, Token } from "@/lib/client";
 
 export interface DataHook {
   // Namespaces.
@@ -9,12 +9,8 @@ export interface DataHook {
   // Tokens.
   tokens: Token[];
 
-  // Profile.
-  profile: Profile | null;
-
   // Functions.
   refresh: () => void;
   refreshTokens: () => void;
   refreshNamespaces: () => void;
-  refreshProfile: () => void;
 }

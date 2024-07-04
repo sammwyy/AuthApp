@@ -13,7 +13,7 @@ function timeToZero(currentSecond: number, interval: number) {
   return 0;
 }
 
-const useTimer = (interval: 30 | 60) => {
+const useTimer = (interval: number) => {
   const [second, setSecond] = useState<number>(new Date().getSeconds());
 
   useEffect(() => {

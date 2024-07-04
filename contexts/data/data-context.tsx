@@ -1,7 +1,7 @@
 "use client";
 
 import useAuth from "@/hooks/use-auth";
-import { Namespace, Profile, Token } from "@/lib/client";
+import { Namespace, Token } from "@/lib/client";
 import React, {
   PropsWithChildren,
   useCallback,
@@ -12,7 +12,6 @@ import { DataHook } from "./data-hook";
 
 export const DataContext = React.createContext<DataHook>({
   namespaces: [],
-  profile: null,
   refresh: () => {},
   selectedNamespace: null,
   setSelectedNamespace: () => {},
@@ -20,7 +19,6 @@ export const DataContext = React.createContext<DataHook>({
 
   refreshTokens: () => {},
   refreshNamespaces: () => {},
-  refreshProfile: () => {},
 });
 
 export const DataProvider = ({ children }: PropsWithChildren) => {
@@ -29,7 +27,6 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
   const [selectedNamespace, setSelectedNamespace] = useState<Namespace | null>(
     null
   );
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [tokens, setTokens] = useState<Token[]>([]);
 
   const refreshTokens = useCallback(() => {
@@ -49,18 +46,10 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
     }
   }, [client, logged]);
 
-  const refreshProfile = useCallback(() => {
-    if (logged) {
-      console.log("Refreshing profile");
-      client.profile.getProfile().then(setProfile);
-    }
-  }, [client, logged]);
-
   const refresh = useCallback(() => {
     refreshTokens();
     refreshNamespaces();
-    refreshProfile();
-  }, [refreshNamespaces, refreshProfile, refreshTokens]);
+  }, [refreshNamespaces, refreshTokens]);
 
   useEffect(() => {
     refresh();
@@ -70,13 +59,11 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
     <DataContext.Provider
       value={{
         namespaces,
-        profile,
         refresh,
         selectedNamespace,
         setSelectedNamespace,
         tokens,
         refreshNamespaces,
-        refreshProfile,
         refreshTokens,
       }}
     >

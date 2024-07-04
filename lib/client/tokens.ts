@@ -1,14 +1,16 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 
-import AuthApp, { Token } from ".";
+import AuthApp, { Token, TokenType } from ".";
 
 export interface CreateTokenDTO {
   namespace: string;
   name: string;
-  icon: string;
-  interval: 30 | 60;
-  type: "totp" | "hotp";
+  icon?: string;
+  type: TokenType;
   token: string;
+  interval: 30 | 60;
+  digits: 6 | 8;
+  algorithm: string;
 }
 
 export type UpdateTokenDTO = Partial<CreateTokenDTO>;

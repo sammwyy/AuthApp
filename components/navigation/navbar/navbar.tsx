@@ -1,4 +1,3 @@
-import UpdateNameDialog from "@/components/dialogs/update-name-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Menubar,
@@ -91,8 +90,6 @@ function NavbarUser() {
         </MenubarTrigger>
 
         <MenubarContent>
-          <UpdateNameDialog />
-
           <NavbarUserButton icon={<LockClosedIcon />} onClick={() => {}}>
             Change password
           </NavbarUserButton>
@@ -126,8 +123,6 @@ export function Navbar() {
         <div className="w-full flex items-center justify-end">
           {logged && (
             <>
-              <span className={"px-2"}>John Doe</span>
-
               <NavbarUser />
             </>
           )}
